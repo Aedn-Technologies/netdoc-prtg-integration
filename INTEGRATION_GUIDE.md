@@ -16,9 +16,10 @@ NetDoc Pro runs a local webhook server on port **9741** that accepts alert paylo
 
 ## 1. Enable the Webhook Server
 
-1. Open the **API menu** in the top toolbar
-2. Enable the **PRTG Webhook** toggle
-3. The status bar at the bottom of the app shows **`:9741`** in teal when the server is active
+1. Open the **Network Tools drawer** (toolbar button)
+2. Go to the **Discover** tab
+3. Scroll to **PRTG WEBHOOK SERVER** and enable the toggle
+4. The status bar at the bottom of the app shows **`:9741`** in teal when the server is active
 
 > The webhook server is **off by default**. It must be explicitly enabled each session, or it restores its last state on relaunch.
 
@@ -61,7 +62,7 @@ The webhook server accepts a JSON object or a JSON array of objects. Field names
 
 | Field | Accepted keys | Values |
 |-------|--------------|--------|
-| Device / host | `device`, `host`, `name` | IP address or hostname matching a canvas node |
+| Device / host | `device`, `host`, `name` | IP address or device name matching a canvas node |
 | Status | `status`, `state` | `Up`, `Down`, `Warning`, `Unusual` |
 | Sensor | `sensor`, `type` | Sensor name (optional) |
 | Message | `message`, `text` | Alert detail text (optional) |
@@ -110,7 +111,7 @@ You can verify the webhook works before configuring PRTG. From the test folder i
 
 This sends a single fake alert to the NetDoc Pro webhook and prints the server response. If you see `received: 1, dropped: 0` and a device status change on the canvas, the webhook is working. If not, check section 9 (Troubleshooting) for common causes.
 
-A bash equivalent is in `test/send_test_alert.sh` for WSL or non-Windows test environments.
+A bash equivalent is in `test/send_test_alert.sh` for WSL environments.
 
 ---
 
@@ -134,7 +135,7 @@ http://localhost:9741/prtg
 
 ```json
 {
-  "device": "%host",
+  "device": "%device",
   "status": "%status",
   "sensor": "%name",
   "message": "%message"
@@ -186,7 +187,7 @@ Invoke-RestMethod -Uri http://localhost:9741/prtg -Method POST -ContentType "app
 
 ## 7. How Device Matching Works
 
-The webhook matches the incoming `device` field against canvas nodes by **IP address**. Ensure the device IP in the PRTG payload (`%host`) matches the IP set on the canvas node exactly.
+The webhook matches the incoming `device` field against canvas nodes. Ensure the device name sent by PRTG (`%device`) matches the label set on the canvas node exactly.
 
 If a device has no matching node on the canvas, the alert is accepted (returns `received: 1`) but produces no visible change.
 
@@ -209,8 +210,8 @@ Any unrecognised status value is stored as-is but may not produce a colour chang
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| `Could not connect` | Webhook server not running | Enable the PRTG toggle in the API menu, check status bar for `:9741` |
-| `received: 1` but no canvas change | Device IP not on canvas, or diagram not open | Check the IP matches a canvas node exactly |
+| `Could not connect` | Webhook server not running | Enable the PRTG toggle in Network Tools → Discover, check status bar for `:9741` |
+| `received: 1` but no canvas change | Device name not matching a canvas node | Check the `%device` value matches the canvas node label exactly |
 | `400 empty body` | POST sent with no body | Ensure PRTG is sending a JSON payload |
 | `413 payload too large` | Payload exceeds 512 KB | Reduce batch size or message length |
 | PRTG cannot reach port 9741 | Firewall blocking | Add Windows Firewall inbound rule for TCP 9741 |

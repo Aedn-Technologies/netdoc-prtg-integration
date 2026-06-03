@@ -13,7 +13,7 @@ NetDoc Pro accepts PRTG alert notifications on a local webhook endpoint and upda
 
 ## Quick start
 
-1. Enable the PRTG webhook in NetDoc Pro (**API menu → PRTG Webhook**). The status bar shows `:9741` in teal when active.
+1. Enable the PRTG webhook in NetDoc Pro (**Network Tools drawer → Discover tab → PRTG WEBHOOK SERVER**). The status bar shows `:9741` in teal when active.
 2. Run `test/send_test_alert.ps1` from PowerShell to send a fake alert and confirm the webhook server is responding.
 3. Configure PRTG to POST notifications to `http://localhost:9741/prtg` (or the IP of your NetDoc Pro machine if PRTG runs separately). Use the payload template from `prtg/notification_template.json`.
 4. Trigger a sensor in PRTG and watch the device status badge update on the NetDoc Pro canvas.

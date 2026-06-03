@@ -1,5 +1,5 @@
 {
-  "device": "%host",
+  "device": "%device",
   "status": "%status",
   "sensor": "%name",
   "message": "%message"
