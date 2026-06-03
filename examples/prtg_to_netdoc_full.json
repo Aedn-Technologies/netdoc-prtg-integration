@@ -1,0 +1,6 @@
+{
+  "device": "192.168.1.1",
+  "status": "Down",
+  "sensor": "Ping",
+  "message": "Gateway not responding — initial check failed at 14:32:08"
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PRTG HTTP Advanced sensor configuration for monitoring the
+  NetDoc Pro webhook server's health endpoint.
+
+  Import this in PRTG via Setup > Account Settings > Sensor Settings > Import Sensor.
+  Or use it as a reference when configuring an HTTP Advanced sensor manually.
+
+  This sensor polls /health every 60 seconds and alerts if the response is
+  not 200 OK or doesn't contain the expected status field.
+-->
+<sensor>
+  <name>NetDoc Pro Webhook Health</name>
+  <type>http_advanced</type>
+  <url>http://localhost:9741/health</url>
+  <method>GET</method>
+  <interval_seconds>60</interval_seconds>
+  <timeout_seconds>5</timeout_seconds>
+
+  <!-- Expected response: {"status":"ok","service":"NetDoc Pro webhook","port":9741} -->
+  <required_response_content>"status":"ok"</required_response_content>
+  <required_status_code>200</required_status_code>
+
+  <tags>
+    <tag>netdoc-pro</tag>
+    <tag>webhook</tag>
+    <tag>health-check</tag>
+  </tags>
+</sensor>

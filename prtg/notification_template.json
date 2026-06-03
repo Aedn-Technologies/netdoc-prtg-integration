@@ -1,0 +1,6 @@
+{
+  "device": "%host",
+  "status": "%status",
+  "sensor": "%name",
+  "message": "%message"
+}
