@@ -27,6 +27,8 @@ The full integration guide covers each step in detail, including PRTG-side notif
 - Windows 10 / 11 (NetDoc Pro is Windows only)
 
 ## Webhook endpoints
+<img width="470" height="312" alt="PRTG" src="https://github.com/user-attachments/assets/647a3438-c2a9-48a3-88f9-8aa2b40f333b" />
+
 
 | Method | Path | Purpose |
 |--------|------|---------|
