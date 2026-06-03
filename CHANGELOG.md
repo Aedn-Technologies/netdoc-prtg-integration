@@ -2,6 +2,16 @@
 
 All notable changes to this integration guide and helper scripts will be documented in this file.
 
+## [1.0.1] — 2026-06-02
+
+### Fixed
+
+- **PRTG toggle location:** All documentation corrected from "API menu → PRTG Webhook" to the accurate location: **Network Tools drawer → Discover tab → PRTG WEBHOOK SERVER**
+- **Payload variable:** `%host` corrected to `%device` in `prtg/notification_template.json` and all guide references, matching the variable substitution shown in the NetDoc Pro in-app PRTG setup instructions
+- **XML sensor import:** `prtg/sample_http_advanced.xml` clarified as a reference document only — PRTG does not support importing HTTP Advanced sensor configs via XML; file now includes manual setup steps instead
+
+---
+
 ## [1.0.0] — 2026-06-02
 
 ### Added
