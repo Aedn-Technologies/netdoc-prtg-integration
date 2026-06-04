@@ -58,6 +58,8 @@ All three POST endpoints behave identically. Use `/prtg` for PRTG-specific integ
 
 The webhook server accepts a JSON object or a JSON array of objects. Field names are flexible — the server tries multiple common key names automatically.
 
+> A ready-to-paste version of this payload is available in [`prtg/notification_template.json`](prtg/notification_template.json). You can copy its contents directly into the PRTG notification body field.
+
 ### Recognised field names
 
 | Field | Accepted keys | Values |
