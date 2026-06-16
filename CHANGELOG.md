@@ -13,6 +13,7 @@ All notable changes to this integration guide and helper scripts will be documen
 - **test/send_batch_alerts.ps1:** Same.
 - **test/stress_test.ps1:** Same.
 - **test/send_test_alert.sh:** Uses a curl args array with a conditional `-H "X-Webhook-Token: …"` append; removes `TOKEN_QUERY` variable.
+- **INTEGRATION_GUIDE.md section 5:** Added a callout note explaining that PRTG's Execute HTTP Action trigger does not support custom request headers, so `?token=` in the URL is the only available option within PRTG itself. Clarifies that the header method applies to test scripts and other tools.
 
 ---
 
