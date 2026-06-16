@@ -14,9 +14,10 @@ NetDoc Pro accepts PRTG alert notifications on a local webhook endpoint and upda
 ## Quick start
 
 1. Enable the PRTG webhook in NetDoc Pro (**Network Tools drawer → Discover tab → PRTG WEBHOOK SERVER**). The status bar shows `:9741` in teal when active.
-2. Run `test/send_test_alert.ps1` from PowerShell to send a fake alert and confirm the webhook server is responding.
-3. Configure PRTG to POST notifications to `http://localhost:9741/prtg` (or the IP of your NetDoc Pro machine if PRTG runs separately). Use the payload template from `prtg/notification_template.json`.
-4. Trigger a sensor in PRTG and watch the device status badge update on the NetDoc Pro canvas.
+2. Copy your webhook token from the same panel (shown as `Token: ab3f…9c21` with a copy icon).
+3. Run `test/send_test_alert.ps1 -Token YOUR_TOKEN` from PowerShell to confirm the webhook is responding.
+4. Configure PRTG to POST notifications to `http://localhost:9741/prtg` with header `X-Webhook-Token: YOUR_TOKEN` (or replace `localhost` with the NetDoc Pro machine IP if PRTG runs separately). Use the payload template from `prtg/notification_template.json`.
+5. Trigger a sensor in PRTG and watch the device status badge update on the NetDoc Pro canvas.
 
 The full integration guide covers each step in detail, including PRTG-side notification setup, firewall configuration for multi-host deployments, and troubleshooting common issues.
 
@@ -30,14 +31,14 @@ The full integration guide covers each step in detail, including PRTG-side notif
 <img width="470" height="312" alt="PRTG" src="https://github.com/user-attachments/assets/647a3438-c2a9-48a3-88f9-8aa2b40f333b" />
 
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/health` | Health check, no auth required |
-| POST | `/prtg` | PRTG-specific alert endpoint |
-| POST | `/alert` | Generic alias for any monitoring tool |
-| POST | `/webhook` | Generic alias for any monitoring tool |
+| Method | Path | Auth | Purpose |
+| ------ | ---- | ---- | ------- |
+| GET | `/health` | No | Health check |
+| POST | `/prtg` | `X-Webhook-Token` header | PRTG-specific alert endpoint |
+| POST | `/alert` | `X-Webhook-Token` header | Generic alias for any monitoring tool |
+| POST | `/webhook` | `X-Webhook-Token` header | Generic alias for any monitoring tool |
 
-All three POST endpoints behave identically. See the integration guide for payload format.
+All three POST endpoints behave identically. Pass your token as the `X-Webhook-Token` request header. A `?token=` query parameter is also accepted as a legacy fallback for tools that cannot set custom headers. See the integration guide for details.
 
 ## Connecting other monitoring tools
 

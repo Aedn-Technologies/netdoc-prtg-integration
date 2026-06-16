@@ -25,6 +25,36 @@ NetDoc Pro runs a local webhook server on port **9741** that accepts alert paylo
 
 ---
 
+## Authentication
+
+From NetDoc Pro **1.14.0**, all POST endpoints require a secret token. This prevents other software running on the same machine from injecting fake alerts into your topology diagram.
+
+### Finding your token
+
+1. Open **Network Tools drawer → Discover tab → PRTG WEBHOOK SERVER**
+2. Below the server status indicator you will see `Token: ab3f1c2d…9c21`
+3. Click the **copy icon** to copy the full token to the clipboard
+
+### Using the token
+
+Pass the token as a request header — this is the recommended method because headers are not recorded in proxy logs or web server access logs:
+
+```text
+X-Webhook-Token: ab3f1c2dexample9c21
+```
+
+As a legacy fallback, the token can also be appended as a query parameter. Use this only if your monitoring tool cannot set custom headers:
+
+```text
+http://localhost:9741/prtg?token=ab3f1c2dexample9c21
+```
+
+The token is generated once per installation and persists across restarts. The `/health` endpoint does **not** require a token.
+
+> **Upgrading from v1.12 or v1.13:** Existing PRTG notification URLs (`http://localhost:9741/prtg`) will now return `401 Unauthorized`. Update your PRTG notification to send the `X-Webhook-Token` header, or append `?token=<your-token>` to the URL if your PRTG version does not support custom headers.
+
+---
+
 ## 2. Verify the Server is Running
 
 From PowerShell:
@@ -126,10 +156,12 @@ A bash equivalent is in `test/send_test_alert.sh` for WSL environments.
 3. Set the URL to:
 
 ```text
-http://localhost:9741/prtg
+http://localhost:9741/prtg?token=YOUR_TOKEN
 ```
 
-> If PRTG is on a **different machine** than NetDoc Pro, replace `localhost` with the NetDoc Pro machine's IP address (e.g. `http://192.168.1.50:9741/prtg`). Ensure port 9741 is reachable — add a Windows Firewall inbound rule if needed.
+Replace `YOUR_TOKEN` with the token shown in NetDoc Pro (**Network Tools → Discover → PRTG WEBHOOK SERVER → copy icon**).
+
+> If PRTG is on a **different machine** than NetDoc Pro, replace `localhost` with the NetDoc Pro machine's IP address (e.g. `http://192.168.1.50:9741/prtg?token=YOUR_TOKEN`). Ensure port 9741 is reachable — add a Windows Firewall inbound rule if needed.
 
 4. Set the **HTTP Method** to `POST`
 5. Set **Content-Type** to `application/json`
@@ -162,12 +194,13 @@ Send a test payload from PowerShell without needing PRTG:
 
 ```powershell
 # Single alert — device down
-$body = '{"device":"192.168.1.1","status":"Down","sensor":"Ping","message":"No response"}'
-Invoke-RestMethod -Uri http://localhost:9741/prtg -Method POST -ContentType "application/json" -Body $body
+$token = "YOUR_TOKEN"
+$body  = '{"device":"192.168.1.1","status":"Down","sensor":"Ping","message":"No response"}'
+Invoke-RestMethod -Uri "http://localhost:9741/prtg?token=$token" -Method POST -ContentType "application/json" -Body $body
 
 # Single alert — device recovered
 $body = '{"device":"192.168.1.1","status":"Up","sensor":"Ping","message":"Device recovered"}'
-Invoke-RestMethod -Uri http://localhost:9741/prtg -Method POST -ContentType "application/json" -Body $body
+Invoke-RestMethod -Uri "http://localhost:9741/prtg?token=$token" -Method POST -ContentType "application/json" -Body $body
 ```
 
 **Expected response:**
@@ -182,7 +215,7 @@ Watch the canvas — the device node matching `192.168.1.1` updates its status b
 
 ```powershell
 $body = '[{"device":"192.168.1.1","status":"Down"},{"device":"192.168.1.10","status":"Warning"}]'
-Invoke-RestMethod -Uri http://localhost:9741/prtg -Method POST -ContentType "application/json" -Body $body
+Invoke-RestMethod -Uri "http://localhost:9741/prtg?token=$token" -Method POST -ContentType "application/json" -Body $body
 ```
 
 ---
@@ -217,4 +250,5 @@ Any unrecognised status value is stored as-is but may not produce a colour chang
 | `400 empty body` | POST sent with no body | Ensure PRTG is sending a JSON payload |
 | `413 payload too large` | Payload exceeds 512 KB | Reduce batch size or message length |
 | PRTG cannot reach port 9741 | Firewall blocking | Add Windows Firewall inbound rule for TCP 9741 |
+| `401 Unauthorized` | Missing or invalid token | Add `?token=YOUR_TOKEN` to the notification URL — copy the token from Network Tools → Discover → PRTG WEBHOOK SERVER |
 | PRTG on separate machine, using `localhost` | `localhost` resolves to PRTG machine | Use NetDoc Pro machine's LAN IP in the PRTG notification URL |

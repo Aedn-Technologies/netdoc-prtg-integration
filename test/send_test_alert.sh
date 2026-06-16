@@ -2,9 +2,12 @@
 # Send a single test alert to the NetDoc Pro webhook server.
 #
 # Usage:
-#   ./send_test_alert.sh                                           # default Down alert for 192.168.1.1
-#   ./send_test_alert.sh 10.0.99.1 Up                              # specific device + status
-#   WEBHOOK_HOST=http://192.168.1.50:9741 ./send_test_alert.sh     # different host
+#   WEBHOOK_TOKEN=yourtoken ./send_test_alert.sh                   # default Down alert for 192.168.1.1
+#   WEBHOOK_TOKEN=yourtoken ./send_test_alert.sh 10.0.99.1 Up      # specific device + status
+#   WEBHOOK_HOST=http://192.168.1.50:9741 WEBHOOK_TOKEN=yourtoken ./send_test_alert.sh
+#
+# WEBHOOK_TOKEN is required from NetDoc Pro 1.14.0 onwards.
+# Copy it from Network Tools → Discover → PRTG WEBHOOK SERVER in the app.
 #
 # WSL note: localhost does not reach the Windows host in WSL2.
 # Get the Windows host IP first:
@@ -13,8 +16,13 @@
 set -euo pipefail
 
 WEBHOOK_HOST="${WEBHOOK_HOST:-http://localhost:9741}"
+WEBHOOK_TOKEN="${WEBHOOK_TOKEN:-}"
 DEVICE_IP="${1:-192.168.1.1}"
 STATUS="${2:-Down}"
+
+if [ -z "$WEBHOOK_TOKEN" ]; then
+  echo "WARNING: WEBHOOK_TOKEN not set. Requests will return 401 on NetDoc Pro 1.14.0+." >&2
+fi
 
 # Step 1 — verify webhook is running
 echo "Checking webhook health at ${WEBHOOK_HOST}/health..."
@@ -31,11 +39,10 @@ PAYLOAD=$(printf '{"device":"%s","status":"%s","sensor":"Test sensor","message":
   "${DEVICE_IP}" "${STATUS}" "${TIMESTAMP}")
 
 echo "Sending test alert to ${DEVICE_IP} (status: ${STATUS})..."
-RESPONSE=$(curl -sS --max-time 5 \
-  -H "Content-Type: application/json" \
-  -X POST \
-  -d "${PAYLOAD}" \
-  "${WEBHOOK_HOST}/prtg")
+CURL_ARGS=(-sS --max-time 5 -H "Content-Type: application/json" -X POST -d "${PAYLOAD}")
+[ -n "$WEBHOOK_TOKEN" ] && CURL_ARGS+=(-H "X-Webhook-Token: ${WEBHOOK_TOKEN}")
+
+RESPONSE=$(curl "${CURL_ARGS[@]}" "${WEBHOOK_HOST}/prtg")
 
 echo "Server response: ${RESPONSE}"
 echo "✓ Test alert sent. Check the NetDoc Pro canvas for the status change on device ${DEVICE_IP}."

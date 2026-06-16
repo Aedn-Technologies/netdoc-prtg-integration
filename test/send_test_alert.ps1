@@ -6,26 +6,34 @@
     Run this before configuring PRTG to confirm the integration works.
 .PARAMETER WebhookHost
     The NetDoc Pro webhook URL. Defaults to http://localhost:9741.
+.PARAMETER Token
+    The webhook secret token shown in NetDoc Pro (Network Tools → Discover → PRTG WEBHOOK SERVER).
+    Required from NetDoc Pro 1.14.0 onwards.
 .PARAMETER DeviceIp
     The IP address to send the alert for. Defaults to 192.168.1.1.
 .PARAMETER Status
     The status value. Up, Down, Warning, or Unusual. Defaults to Down.
 .EXAMPLE
-    .\send_test_alert.ps1
+    .\send_test_alert.ps1 -Token "ab3f1c2dexample9c21"
 
     Send a default Down alert for 192.168.1.1.
 .EXAMPLE
-    .\send_test_alert.ps1 -DeviceIp "10.0.99.1" -Status "Up"
+    .\send_test_alert.ps1 -Token "ab3f1c2dexample9c21" -DeviceIp "10.0.99.1" -Status "Up"
 
     Send a recovery alert for a specific device.
 #>
 
 param(
     [string]$WebhookHost = "http://localhost:9741",
+    [string]$Token       = "",
     [string]$DeviceIp    = "192.168.1.1",
     [ValidateSet("Up","Down","Warning","Unusual")]
     [string]$Status      = "Down"
 )
+
+$headers = @{ 'Content-Type' = 'application/json' }
+if ($Token) { $headers['X-Webhook-Token'] = $Token }
+else { Write-Warning "No -Token provided. Requests will return 401 on NetDoc Pro 1.14.0+. Copy the token from Network Tools → Discover → PRTG WEBHOOK SERVER." }
 
 # Step 1 — verify the webhook is running
 try {
@@ -51,7 +59,7 @@ Write-Host "Sending test alert to $DeviceIp (status: $Status)..." -ForegroundCol
 try {
     $response = Invoke-RestMethod -Uri "$WebhookHost/prtg" `
                                   -Method POST `
-                                  -ContentType "application/json" `
+                                  -Headers $headers `
                                   -Body $payload `
                                   -TimeoutSec 5
     Write-Host "Server response: { received: $($response.received), dropped: $($response.dropped) }" -ForegroundColor Green

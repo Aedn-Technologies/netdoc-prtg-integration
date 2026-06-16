@@ -6,13 +6,20 @@
     array payloads correctly. Useful before integrating PRTG bulk notifications.
 .PARAMETER WebhookHost
     The NetDoc Pro webhook URL. Defaults to http://localhost:9741.
+.PARAMETER Token
+    The webhook secret token shown in NetDoc Pro (Network Tools → Discover → PRTG WEBHOOK SERVER).
+    Required from NetDoc Pro 1.14.0 onwards.
 .EXAMPLE
-    .\send_batch_alerts.ps1
+    .\send_batch_alerts.ps1 -Token "ab3f1c2dexample9c21"
 #>
 
 param(
-    [string]$WebhookHost = "http://localhost:9741"
+    [string]$WebhookHost = "http://localhost:9741",
+    [string]$Token       = ""
 )
+
+$headers = @{ 'Content-Type' = 'application/json' }
+if ($Token) { $headers['X-Webhook-Token'] = $Token }
 
 $alerts = @(
     @{ device = "192.168.1.1";   status = "Down";    sensor = "Ping";      message = "Gateway unreachable" },
@@ -29,7 +36,7 @@ Write-Host "Sending batch of $($alerts.Count) test alerts to $WebhookHost/prtg..
 try {
     $response = Invoke-RestMethod -Uri "$WebhookHost/prtg" `
                                   -Method POST `
-                                  -ContentType "application/json" `
+                                  -Headers $headers `
                                   -Body $body `
                                   -TimeoutSec 5
     Write-Host "Server response: received=$($response.received), dropped=$($response.dropped)" -ForegroundColor Green

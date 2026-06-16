@@ -6,22 +6,29 @@
     Not necessary for normal setup — only run this if you suspect performance issues.
 .PARAMETER WebhookHost
     The NetDoc Pro webhook URL. Defaults to http://localhost:9741.
+.PARAMETER Token
+    The webhook secret token shown in NetDoc Pro (Network Tools → Discover → PRTG WEBHOOK SERVER).
+    Required from NetDoc Pro 1.14.0 onwards.
 .PARAMETER Count
     Number of alerts to send. Defaults to 100.
 .EXAMPLE
-    .\stress_test.ps1
+    .\stress_test.ps1 -Token "ab3f1c2dexample9c21"
 
     Send 100 alerts to the local webhook.
 .EXAMPLE
-    .\stress_test.ps1 -Count 50
+    .\stress_test.ps1 -Token "ab3f1c2dexample9c21" -Count 50
 
     Send 50 alerts.
 #>
 
 param(
     [string]$WebhookHost = "http://localhost:9741",
+    [string]$Token       = "",
     [int]$Count          = 100
 )
+
+$headers = @{ 'Content-Type' = 'application/json' }
+if ($Token) { $headers['X-Webhook-Token'] = $Token }
 
 Write-Host "Stress test: sending $Count alerts to $WebhookHost/prtg" -ForegroundColor Cyan
 
@@ -40,7 +47,7 @@ for ($i = 1; $i -le $Count; $i++) {
     try {
         Invoke-RestMethod -Uri "$WebhookHost/prtg" `
                           -Method POST `
-                          -ContentType "application/json" `
+                          -Headers $headers `
                           -Body $payload `
                           -TimeoutSec 5 | Out-Null
         $succeeded++
