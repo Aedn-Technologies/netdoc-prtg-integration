@@ -149,6 +149,8 @@ A bash equivalent is in `test/send_test_alert.sh` for WSL environments.
 
 ## 5. Configure PRTG
 
+> **Note on token method:** Sections 5 and 6 use `?token=` in the URL rather than the `X-Webhook-Token` header. This is intentional — PRTG's **Execute HTTP Action** notification trigger does not support setting custom request headers, so the query parameter is the only option available within PRTG itself. The header method (recommended in the Authentication section above) applies to test scripts, Zabbix, Nagios, custom curl calls, and any tool that lets you set request headers freely.
+
 ### Step 1 — Create a notification in PRTG
 
 1. In PRTG, go to **Setup → Notifications → Add Notification**
